@@ -22,7 +22,9 @@ BASE_DIR = Path(__file__).resolve().parents[2]
 
 # Load local environment variables if a .env file exists.
 # Render supplies its own environment variables.
-load_dotenv(BASE_DIR / ".env", override=False)
+ENV_FILE = os.getenv("ENV_FILE", ".env")
+
+load_dotenv(BASE_DIR / ENV_FILE, override=False)
 
 def get_env_list(name, default=""):
     return [
@@ -96,6 +98,7 @@ INSTALLED_APPS = (
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     'django.contrib.sessions.middleware.SessionMiddleware',
     "corsheaders.middleware.CorsMiddleware",
     'django.middleware.common.CommonMiddleware',
@@ -200,7 +203,14 @@ USE_TZ = True
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
-
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
 # Email
 # https://docs.djangoproject.com/en/6.1/topics/email/#topic-email-configuration
 

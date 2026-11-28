@@ -21,7 +21,7 @@ if "*" in ALLOWED_HOSTS:
 
 for host in ALLOWED_HOSTS:
 
-    if any(
+    if (
         "://" in host
         or "/" in host
         or host.lower() in ("localhost", "127.0.0.1")
