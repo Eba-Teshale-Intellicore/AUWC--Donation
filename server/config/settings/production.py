@@ -82,3 +82,18 @@ if DEBUG:
     raise ImproperlyConfigured(
         "Production settings require DEBUG=False."
     )
+
+if not SECRET_KEY:
+    raise ImproperlyConfigured(
+        "Production SECRET_KEY must be configured."
+    )
+
+if not DATABASE_URL:
+    raise ImproperlyConfigured(
+        "Production DATABASE_URL must be configured."
+    )
+
+if not CHAPA_SECRET_KEY:
+    raise ImproperlyConfigured(
+        "Production CHAPA_SECRET_KEY must be configured."
+    )
