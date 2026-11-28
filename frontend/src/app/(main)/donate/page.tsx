@@ -3,6 +3,10 @@
 import Image from "next/image";
 import React, { useState } from "react";
 import { z } from "zod";
+import { toast } from "sonner";
+import axios from "axios";
+import api from "@/lib/axios";
+import { motion } from "framer-motion";
 
 const donationSchema = z.object({
   amount: z
@@ -33,7 +37,7 @@ type DonationPayload = DonationData & {
   currency: "ETB";
 };
 export default function Donate() {
-  const [selectedAmount, setSelectAmount] = useState<number | null>(10);
+  const [selectedAmount, setSelectAmount] = useState<number | null>(50);
   const [customAmount, setCustomAmount] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -42,8 +46,9 @@ export default function Donate() {
   const [errors, setErrors] = useState<
     Partial<Record<keyof DonationData, string>>
   >({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const amounts = [10, 50, 100, 500, 1000];
+  const amounts = [50, 100, 500, 1000, 5000];
 
   const handlePresentAmount = (amount: number) => {
     setSelectAmount(amount);
@@ -104,7 +109,7 @@ export default function Donate() {
 
   //   // Next: Send donationData to your Django API.
   // };
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     const result = donationSchema.safeParse({
@@ -127,6 +132,7 @@ export default function Donate() {
       });
 
       setErrors(fieldErrors);
+      toast.error("Please correct the form errors.");
       return;
     }
 
@@ -140,6 +146,35 @@ export default function Donate() {
     console.log("Donation Details:", donationData);
 
     // Next: Send donationData to your Django API.
+    setIsSubmitting(true);
+    try {
+      const res = await api.post("/donations/", donationData);
+
+      console.log("API Response:", res.data);
+      // Example: Django returns Chapa's checkout URL.
+      const checkoutUrl = res.data.checkout_url;
+
+      if (!checkoutUrl) {
+        toast.error("Checkout URL was not provided.");
+        return;
+      }
+
+      toast.success("Donation initialized successfully!");
+
+      window.location.assign(checkoutUrl);
+    } catch (error) {
+      console.error("Donation error:", error);
+      if (axios.isAxiosError(error)) {
+        toast.error(
+          error.response?.data?.message ??
+            "Unable to initialize your donation.",
+        );
+      } else {
+        toast.error("An unexpected error occurred.");
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -158,14 +193,19 @@ export default function Donate() {
             <div className="absolute inset-0 bg-red-500/30" />
           </div>
 
-          <div className="absolute inset-0 z-10 flex flex-col items-center justify-center px-4 text-center text-white mt-55 md:mt-55 lg:mt-55">
+          <motion.div
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            className="absolute inset-0 z-10 flex flex-col items-center justify-center px-4 text-center text-white mt-55 md:mt-55 lg:mt-55"
+          >
             <h1 className="text-4xl font-black md:text-6xl">
               Make a Difference Today
             </h1>
             <p className="mt-4 max-w-xl text-lg">
               Together, we can support our community and create a better future.
             </p>
-          </div>
+          </motion.div>
         </section>
 
         <section className="mx-auto mt-4 flex max-w-7xl flex-col gap-8 px-6 py-10 md:flex-row md:px-10">
@@ -389,9 +429,10 @@ export default function Donate() {
               <div>
                 <button
                   type="submit"
+                  disabled={isSubmitting}
                   className="mt-8 w-full rounded-lg bg-amber-900 px-6 py-4 font-bold text-white transition hover:bg-amber-800"
                 >
-                  Next Step
+                  {isSubmitting ? "Processing..." : "Next Step"}
                 </button>
               </div>
             </form>
@@ -401,3 +442,72 @@ export default function Donate() {
     </div>
   );
 }
+
+// sonner(toast) using
+// toast.success("Success!");
+// toast.error("Something went wrong!");
+// toast.info("New information!");
+// toast.warning("Please check your input!");
+
+// 2. TanStack Query (React Query)
+
+// TanStack Query
+
+// Server-state management library
+
+// Fetching, caching and synchronizing data
+
+// Here is an important distinction:
+
+// Axios sends the request. TanStack Query manages the data returned from that request.
+
+// For example, imagine a product listing page.
+
+// Without TanStack Query, you would manually manage:
+// - Loading states.
+// - Error states.
+// - API requests.
+// - Cached responses.
+// - Refetching data.
+// - Synchronizing server data.
+// TanStack Query helps manage these responsibilities.
+
+// Example:
+// "use client";
+
+// import { useQuery } from "@tanstack/react-query";
+// import axios from "axios";
+
+// export default function Products() {
+//   const { data, isLoading, isError } = useQuery({
+//     queryKey: ["products"],
+
+//     queryFn: async () => {
+//       const response = await axios.get(
+//         "http://localhost:8000/api/v1/products/"
+//       );
+
+//       return response.data;
+//     },
+//   });
+
+//   if (isLoading) return <p>Loading...</p>;
+
+//   if (isError) return <p>Something went wrong.</p>;
+
+//   return (
+//     <div>
+//       {data.map((product: any) => (
+//         <p key={product.id}>{product.name}</p>
+//       ))}
+//     </div>
+//   );
+// }
+
+// Notice:
+// - queryKey: Identifies the cached data.
+// - queryFn: Defines how to fetch the data.
+// - isLoading: Indicates that data is loading.
+// - isError: Indicates that an error occurred.
+// - data: Contains the returned data.
+// Real-world example: When users visit the Sira service marketplace, TanStack Query can manage the fetching and caching of available services.

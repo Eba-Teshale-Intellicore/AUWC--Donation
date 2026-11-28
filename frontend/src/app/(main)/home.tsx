@@ -18,13 +18,20 @@ export default function Homes() {
   return (
     <div className="flex min-h-screen w-full flex-col">
       <main className="flex w-full flex-1 flex-col items-center justify-center px-1 py-25 md:py-18">
-        <h1 className="max-w-[650px] py-10 text-center text-3xl leading-tight font-black md:text-5xl text-white">
-          AUWC Evasue Community Events, Donations & Fundraising
-        </h1>
-        <p className="mb-8 max-w-[500px] text-center text-gray-500">
-          Bringing our community together to support meaningful causes,
-          celebrate special moments, and create lasting impact.
-        </p>
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+          className="flex flex-col items-center justify-center"
+        >
+          <h1 className="max-w-[650px] py-10 text-center text-3xl leading-tight font-black md:text-5xl text-white">
+            AUWC Evasue Community Events, Donations & Fundraising
+          </h1>
+          <p className="mb-8 max-w-[500px] text-center text-gray-500">
+            Bringing our community together to support meaningful causes,
+            celebrate special moments, and create lasting impact.
+          </p>
+        </motion.div>
         <div className="my-5 flex items-center justify-center gap-12.5 pb-10 md:pb-1">
           <Link
             href="/donate"
